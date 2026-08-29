@@ -1,0 +1,114 @@
+{
+  "runLabel": "final",
+  "timestamp": "2026-08-29T12:58:21.648Z",
+  "taskDescription": "3-agent pipeline: classify -> decide escalation -> action guard",
+  "metrics": {
+    "total": 12,
+    "correct": 11,
+    "accuracy": 0.9166666666666666,
+    "precision": 0.8333333333333334,
+    "recall": 1,
+    "f1": 0.9090909090909091,
+    "challengingCases": 3,
+    "challengingCorrect": 3
+  },
+  "sampleOutputs": [
+    {
+      "id": "c01",
+      "label": "faq_shipping_time",
+      "expectedDecision": "bot_continue",
+      "predictedDecision": "bot_continue",
+      "correct": true,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c02",
+      "label": "angry_refund_demand",
+      "expectedDecision": "escalate",
+      "predictedDecision": "escalate",
+      "correct": true,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c03",
+      "label": "mild_price_question",
+      "expectedDecision": "bot_continue",
+      "predictedDecision": "bot_continue",
+      "correct": true,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c04",
+      "label": "cancellation_request_calm",
+      "expectedDecision": "escalate",
+      "predictedDecision": "escalate",
+      "correct": true,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c05",
+      "label": "fraud_suspicion",
+      "expectedDecision": "escalate",
+      "predictedDecision": "escalate",
+      "correct": true,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c06",
+      "label": "ambiguous_mixed_signal",
+      "expectedDecision": "bot_continue",
+      "predictedDecision": "bot_continue",
+      "correct": true,
+      "isChallengingCase": true
+    },
+    {
+      "id": "c07",
+      "label": "positive_feedback",
+      "expectedDecision": "bot_continue",
+      "predictedDecision": "bot_continue",
+      "correct": true,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c08",
+      "label": "escalating_tone_across_turns",
+      "expectedDecision": "escalate",
+      "predictedDecision": "escalate",
+      "correct": true,
+      "isChallengingCase": true
+    },
+    {
+      "id": "c09",
+      "label": "simple_thanks",
+      "expectedDecision": "bot_continue",
+      "predictedDecision": "bot_continue",
+      "correct": true,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c10",
+      "label": "discount_request_minor",
+      "expectedDecision": "bot_continue",
+      "predictedDecision": "escalate",
+      "correct": false,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c11",
+      "label": "broken_product_very_negative",
+      "expectedDecision": "escalate",
+      "predictedDecision": "escalate",
+      "correct": true,
+      "isChallengingCase": false
+    },
+    {
+      "id": "c12",
+      "label": "vague_complaint_no_action",
+      "expectedDecision": "bot_continue",
+      "predictedDecision": "bot_continue",
+      "correct": true,
+      "isChallengingCase": true
+    }
+  ],
+  "notes": "DRY RUN using offline heuristic stub — rerun with OPENAI_API_KEY set for real scoring."
+}
