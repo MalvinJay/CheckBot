@@ -37,7 +37,9 @@ all.
 Three narrow agents, each auditable on its own:
 - `src/agents/classifierAgent.ts` — reads the full conversation
   trajectory (not just the last message) and classifies sentiment,
-  urgency, and any proposed consequential action.
+  urgency, and any proposed consequential action, using a small policy
+  reference (`data/policies.json`) to tell a routine, pre-approved
+  request apart from a genuinely discretionary one.
 - `src/agents/escalationAgent.ts` — takes the classification and decides
   bot_continue vs. escalate, with stated reasoning.
 - `src/agents/actionGuardAgent.ts` — a **deterministic, non-LLM**

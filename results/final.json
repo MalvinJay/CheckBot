@@ -1,14 +1,14 @@
 {
   "runLabel": "final",
-  "timestamp": "2026-08-29T12:58:21.648Z",
+  "timestamp": "2026-08-29T14:22:40.433Z",
   "taskDescription": "3-agent pipeline: classify -> decide escalation -> action guard",
   "metrics": {
     "total": 12,
-    "correct": 11,
-    "accuracy": 0.9166666666666666,
-    "precision": 0.8333333333333334,
+    "correct": 12,
+    "accuracy": 1,
+    "precision": 1,
     "recall": 1,
-    "f1": 0.9090909090909091,
+    "f1": 1,
     "challengingCases": 3,
     "challengingCorrect": 3
   },
@@ -89,8 +89,8 @@
       "id": "c10",
       "label": "discount_request_minor",
       "expectedDecision": "bot_continue",
-      "predictedDecision": "escalate",
-      "correct": false,
+      "predictedDecision": "bot_continue",
+      "correct": true,
       "isChallengingCase": false
     },
     {

@@ -33,3 +33,14 @@ invent an insight after the fact. The best entries here are usually:
   - Caveat: this was observed with the offline heuristic stub, not a live LLM
     call — re-test once LIVE mode is running at the actual event to see if a
     real model makes the same mistake or resolves it correctly on its own.
+
+  - **Update — fixed in Iteration 2:** gave the classifier a small policy
+    reference (`data/policies.json`) distinguishing pre-approved/routine
+    actions from discretionary ones. c10 now classifies correctly. Honest
+    caveat: the offline heuristic's fix was hand-tuned against this exact
+    failure, so this doesn't yet prove the approach generalizes — that's
+    what the LIVE run and a slightly expanded eval set are for. The
+    practical lesson stands either way: a verification/guard layer is only
+    as reliable as the classification feeding it, and "add more context"
+    beats "add more agents" when the failure is a classification gap, not
+    an orchestration gap.

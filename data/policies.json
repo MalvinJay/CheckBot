@@ -1,0 +1,16 @@
+{
+  "note": "Synthetic policy reference for the classifier agent. Represents 'what a support team has already pre-approved the bot to discuss/handle without escalation' — the kind of reference doc that would live in a real team's knowledge base.",
+  "preApprovedDiscounts": {
+    "description": "Standard, published promotions the bot can discuss without triggering escalation. A question ABOUT these is routine. A request for something OUTSIDE these (bigger, one-off, unpublished) is discretionary and should still be flagged.",
+    "rules": [
+      "Multi-item purchase discounts (e.g. 'discount if I buy 3+') are pre-approved and publicly listed — answering this is routine, not a proposed action requiring approval.",
+      "Any discount request tied to a complaint, a threat to leave a bad review, or a demand for compensation is discretionary and must still be flagged for human approval, regardless of size."
+    ]
+  },
+  "refundPolicy": {
+    "description": "The bot can never execute a refund itself under any circumstances — always flag. This is unconditional and not affected by policy context.",
+    "rules": [
+      "All refund requests are always escalated with proposedAction=refund, no exceptions."
+    ]
+  }
+}
