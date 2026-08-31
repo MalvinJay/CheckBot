@@ -14,6 +14,8 @@ git clone <repo-url>
 cd frontier-scaffold
 ./scripts/setup.sh   # installs deps, creates .env
 npm run eval          # runs baseline + agent pipeline, writes results/*.json
+npm run dashboard     # generates dashboard/index.html from results/*.json
+open dashboard/index.html   # or just double-click it — no server needed
 ```
 Leave `OPENAI_API_KEY` unset in `.env` to run in DRY-RUN mode (fast, free,
 deterministic — good for verifying wiring). Set it for LIVE scoring, which
@@ -57,6 +59,13 @@ See [`EVALUATION.md`](EVALUATION.md) for the metric definition and
 right now are from a DRY RUN (offline heuristic stubs) — real numbers
 need a LIVE run with an API key before they can be cited in the
 submission.
+
+## The queue dashboard
+`npm run dashboard` turns `results/final.json` and `results/baseline.json`
+into a self-contained `dashboard/index.html` — a queue view for a support
+team lead: which conversations are pending human approval, why the agent
+made each call, and how it compares to the baseline on the same case.
+This is the artifact worth showing in the solution video, not raw JSON.
 
 ## Reproducing the main result
 See [`REPRODUCTION.md`](REPRODUCTION.md).

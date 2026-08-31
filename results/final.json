@@ -1,6 +1,6 @@
 {
   "runLabel": "final",
-  "timestamp": "2026-08-29T14:22:40.433Z",
+  "timestamp": "2026-08-31T07:19:37.922Z",
   "taskDescription": "3-agent pipeline: classify -> decide escalation -> action guard",
   "metrics": {
     "total": 12,
@@ -19,7 +19,28 @@
       "expectedDecision": "bot_continue",
       "predictedDecision": "bot_continue",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "neutral",
+        "urgency": "low",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=neutral, urgency=low",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "Hi, how long does delivery usually take to Kumasi?"
+        },
+        {
+          "from": "bot",
+          "text": "Delivery to Kumasi typically takes 2-3 business days after your order ships."
+        }
+      ],
+      "expectedAction": "none",
+      "note": "Plain FAQ, no sentiment risk, no consequential action."
     },
     {
       "id": "c02",
@@ -27,7 +48,32 @@
       "expectedDecision": "escalate",
       "predictedDecision": "escalate",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "very_negative",
+        "urgency": "high",
+        "proposedAction": "refund",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=refund, sentiment=very_negative, urgency=high",
+      "guardStatus": "pending_human_approval",
+      "guardNote": "Action \"refund\" queued for human approval. Not executed automatically.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "I ordered a blender 3 weeks ago and it STILL hasn't arrived. This is ridiculous."
+        },
+        {
+          "from": "bot",
+          "text": "I'm sorry for the delay, let me check your order status."
+        },
+        {
+          "from": "customer",
+          "text": "I don't want excuses. I want a full refund right now, this is theft at this point."
+        }
+      ],
+      "expectedAction": "refund",
+      "note": "High-severity language + explicit consequential action requested."
     },
     {
       "id": "c03",
@@ -35,7 +81,28 @@
       "expectedDecision": "bot_continue",
       "predictedDecision": "bot_continue",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "neutral",
+        "urgency": "low",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=neutral, urgency=low",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "Do you have this in size L and how much is it?"
+        },
+        {
+          "from": "bot",
+          "text": "Yes, size L is available for GHS 180."
+        }
+      ],
+      "expectedAction": "none",
+      "note": "Routine, low risk."
     },
     {
       "id": "c04",
@@ -43,7 +110,28 @@
       "expectedDecision": "escalate",
       "predictedDecision": "escalate",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "neutral",
+        "urgency": "medium",
+        "proposedAction": "cancel",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=cancel, sentiment=neutral, urgency=medium",
+      "guardStatus": "pending_human_approval",
+      "guardNote": "Action \"cancel\" queued for human approval. Not executed automatically.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "Actually I'd like to cancel order #4471, I found it cheaper elsewhere."
+        },
+        {
+          "from": "bot",
+          "text": "Understood, let me look into that for you."
+        }
+      ],
+      "expectedAction": "cancel",
+      "note": "Calm tone but still a consequential action — escalation is about the ACTION, not just sentiment. Good test of whether the agent over-indexes on tone alone."
     },
     {
       "id": "c05",
@@ -51,7 +139,24 @@
       "expectedDecision": "escalate",
       "predictedDecision": "escalate",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "very_negative",
+        "urgency": "high",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=very_negative, urgency=high",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "Someone charged my card twice for the same order and I never even got a confirmation email. Is this a scam??"
+        }
+      ],
+      "expectedAction": "refund",
+      "note": "Trust/fraud language, high urgency, needs a human regardless of resolution."
     },
     {
       "id": "c06",
@@ -59,7 +164,32 @@
       "expectedDecision": "bot_continue",
       "predictedDecision": "bot_continue",
       "correct": true,
-      "isChallengingCase": true
+      "isChallengingCase": true,
+      "classification": {
+        "sentiment": "neutral",
+        "urgency": "low",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=neutral, urgency=low",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "The product is fine I guess, but honestly the whole experience has been kind of annoying tbh"
+        },
+        {
+          "from": "bot",
+          "text": "I'm sorry to hear that. Can you tell me more about what went wrong?"
+        },
+        {
+          "from": "customer",
+          "text": "Nah it's whatever, don't worry about it"
+        }
+      ],
+      "expectedAction": "none",
+      "note": "CHALLENGING CASE: negative-leaning sentiment but customer explicitly waves it off and requests no action. Tests whether the agent over-escalates on sentiment alone vs. reading actual intent."
     },
     {
       "id": "c07",
@@ -67,7 +197,24 @@
       "expectedDecision": "bot_continue",
       "predictedDecision": "bot_continue",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "positive",
+        "urgency": "low",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=positive, urgency=low",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "Just wanted to say the order arrived early and packaging was great, thank you!"
+        }
+      ],
+      "expectedAction": "none",
+      "note": "Clearly positive, no action needed."
     },
     {
       "id": "c08",
@@ -75,7 +222,36 @@
       "expectedDecision": "escalate",
       "predictedDecision": "escalate",
       "correct": true,
-      "isChallengingCase": true
+      "isChallengingCase": true,
+      "classification": {
+        "sentiment": "very_negative",
+        "urgency": "high",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=very_negative, urgency=high",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "Hi, my order says delivered but I never received it."
+        },
+        {
+          "from": "bot",
+          "text": "Let me check the tracking details for you."
+        },
+        {
+          "from": "customer",
+          "text": "It's been 2 days and no update from you."
+        },
+        {
+          "from": "customer",
+          "text": "This is honestly unacceptable, I need this resolved today or I'm disputing the charge."
+        }
+      ],
+      "expectedAction": "refund",
+      "note": "CHALLENGING CASE: tone escalates gradually across turns, not obvious from the first message alone. Tests whether the agent tracks conversation trajectory or just scores the latest message."
     },
     {
       "id": "c09",
@@ -83,7 +259,24 @@
       "expectedDecision": "bot_continue",
       "predictedDecision": "bot_continue",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "positive",
+        "urgency": "low",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=positive, urgency=low",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "ok thank you"
+        }
+      ],
+      "expectedAction": "none",
+      "note": "Trivial close-out."
     },
     {
       "id": "c10",
@@ -91,7 +284,28 @@
       "expectedDecision": "bot_continue",
       "predictedDecision": "bot_continue",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "neutral",
+        "urgency": "low",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=neutral, urgency=low",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "Any chance of a small discount if I buy 3?"
+        },
+        {
+          "from": "bot",
+          "text": "Let me check what promotions are available."
+        }
+      ],
+      "expectedAction": "none",
+      "note": "Pricing question the bot can handle with published promo rules — not consequential enough to require human approval by itself."
     },
     {
       "id": "c11",
@@ -99,7 +313,24 @@
       "expectedDecision": "escalate",
       "predictedDecision": "escalate",
       "correct": true,
-      "isChallengingCase": false
+      "isChallengingCase": false,
+      "classification": {
+        "sentiment": "very_negative",
+        "urgency": "high",
+        "proposedAction": "refund",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=refund, sentiment=very_negative, urgency=high",
+      "guardStatus": "pending_human_approval",
+      "guardNote": "Action \"refund\" queued for human approval. Not executed automatically.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "The phone case arrived CRACKED. Completely useless. I want my money back immediately, don't send me another one."
+        }
+      ],
+      "expectedAction": "refund",
+      "note": "Clear-cut severe case, should be an easy catch — useful as a sanity check case."
     },
     {
       "id": "c12",
@@ -107,7 +338,32 @@
       "expectedDecision": "bot_continue",
       "predictedDecision": "bot_continue",
       "correct": true,
-      "isChallengingCase": true
+      "isChallengingCase": true,
+      "classification": {
+        "sentiment": "neutral",
+        "urgency": "low",
+        "proposedAction": "none",
+        "reasoning": "[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"
+      },
+      "escalationReasoning": "[dry-run heuristic] action=none, sentiment=neutral, urgency=low",
+      "guardStatus": "not_required",
+      "guardNote": "No consequential action proposed.",
+      "transcript": [
+        {
+          "from": "customer",
+          "text": "Not happy with my last order tbh"
+        },
+        {
+          "from": "bot",
+          "text": "I'm sorry to hear that — what happened?"
+        },
+        {
+          "from": "customer",
+          "text": "It's fine, just wanted you to know"
+        }
+      ],
+      "expectedAction": "none",
+      "note": "CHALLENGING CASE: negative sentiment word ('not happy') but no request for action and customer declines to elaborate. Similar trap to c06 from a different angle."
     }
   ],
   "notes": "DRY RUN using offline heuristic stub — rerun with OPENAI_API_KEY set for real scoring."

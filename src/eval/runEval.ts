@@ -20,8 +20,11 @@ interface CaseResult {
   expectedDecision: Decision;
   predictedDecision: Decision;
   correct: boolean;
-  actionCaughtCorrectly?: boolean;
   isChallengingCase: boolean;
+  classification?: import("../types.js").Classification;
+  escalationReasoning?: string;
+  guardStatus?: import("../types.js").ApprovalStatus;
+  guardNote?: string;
 }
 
 function loadCases(): EvalCase[] {
@@ -58,23 +61,46 @@ function scoreDecisions(results: CaseResult[]) {
 async function runMode(mode: "baseline" | "agent", cases: EvalCase[]): Promise<CaseResult[]> {
   const results: CaseResult[] = [];
   for (const c of cases) {
-    let predicted: Decision;
     if (mode === "baseline") {
-      predicted = await runBaselineTriage(c.transcript);
+      const predicted = await runBaselineTriage(c.transcript);
+      results.push({
+        id: c.id,
+        label: c.label,
+        expectedDecision: c.expectedDecision,
+        predictedDecision: predicted,
+        correct: predicted === c.expectedDecision,
+        isChallengingCase: c.isChallengingCase,
+      });
     } else {
       const pipeline = await runSupportTriage(c.id, c.transcript);
-      predicted = pipeline.escalation.decision;
+      results.push({
+        id: c.id,
+        label: c.label,
+        expectedDecision: c.expectedDecision,
+        predictedDecision: pipeline.escalation.decision,
+        correct: pipeline.escalation.decision === c.expectedDecision,
+        isChallengingCase: c.isChallengingCase,
+        classification: pipeline.classification,
+        escalationReasoning: pipeline.escalation.reasoning,
+        guardStatus: pipeline.guard.status,
+        guardNote: pipeline.guard.note,
+      });
     }
-    results.push({
-      id: c.id,
-      label: c.label,
-      expectedDecision: c.expectedDecision,
-      predictedDecision: predicted,
-      correct: predicted === c.expectedDecision,
-      isChallengingCase: c.isChallengingCase,
-    });
   }
   return results;
+}
+
+function mergeWithCaseContext(results: CaseResult[], cases: EvalCase[]) {
+  const byId = new Map(cases.map((c) => [c.id, c]));
+  return results.map((r) => {
+    const c = byId.get(r.id);
+    return {
+      ...r,
+      transcript: c?.transcript ?? [],
+      expectedAction: c?.expectedAction ?? "unknown",
+      note: c?.note ?? "",
+    };
+  });
 }
 
 async function main() {
@@ -108,7 +134,7 @@ async function main() {
         timestamp,
         taskDescription: "Single direct-prompt escalation triage, no orchestration/guard",
         metrics: baselineScore,
-        sampleOutputs: baselineResults,
+        sampleOutputs: mergeWithCaseContext(baselineResults, cases),
         notes: isLiveMode ? "" : "DRY RUN using offline heuristic stub — rerun with OPENAI_API_KEY set for real scoring.",
       },
       null,
@@ -124,7 +150,7 @@ async function main() {
         timestamp,
         taskDescription: "3-agent pipeline: classify -> decide escalation -> action guard",
         metrics: agentScore,
-        sampleOutputs: agentResults,
+        sampleOutputs: mergeWithCaseContext(agentResults, cases),
         notes: isLiveMode ? "" : "DRY RUN using offline heuristic stub — rerun with OPENAI_API_KEY set for real scoring.",
       },
       null,

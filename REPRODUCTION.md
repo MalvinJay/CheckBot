@@ -44,6 +44,15 @@ for verifying the pipeline runs at all. **Submission numbers must come
 from LIVE mode** — set `OPENAI_API_KEY` before the run that produces the
 numbers cited in `EVALUATION.md`.
 
+## Viewing the results as a dashboard
+```bash
+npm run dashboard
+```
+Writes `dashboard/index.html` — a single self-contained file, no server,
+no external network calls (fonts/icons are all system-native). Open it
+directly in a browser. Regenerate it any time after re-running `npm run
+eval` to pick up new results.
+
 ## Known issues / flakiness
 _[Anything a judge should know before re-running — nondeterminism,
 rate limits, etc. Silence here reads as untested, not as "it's fine."]_

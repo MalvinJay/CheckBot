@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Support Triage Queue</title>
+<style>
+  :root {
+    --basalt: #15181C;
+    --slate: #1E2227;
+    --slate-line: #2A2F36;
+    --chalk: #ECEEF0;
+    --ash: #8D96A0;
+    --ember: #E2984B;
+    --ember-dim: #4A3A24;
+    --moss: #6E9C7D;
+    --moss-dim: #263129;
+    --rust: #C1543B;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--basalt);
+    color: var(--chalk);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  a { color: inherit; }
+  button { font-family: inherit; }
+
+  .topbar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--slate-line);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .topbar h1 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .topbar .subtitle {
+    color: var(--ash);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  .mode-pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--slate-line);
+    color: var(--ash);
+  }
+
+  .metrics-row {
+    display: flex;
+    gap: 28px;
+  }
+  .metric {
+    text-align: right;
+  }
+  .metric .label {
+    color: var(--ash);
+    font-size: 11px;
+  }
+  .metric .value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+  }
+  .metric .value.better { color: var(--moss); }
+  .metric .value.worse { color: var(--rust); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    min-height: calc(100vh - 73px);
+  }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .queue {
+    border-right: 1px solid var(--slate-line);
+    overflow-y: auto;
+  }
+  .queue-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 20px;
+    border: none;
+    border-bottom: 1px solid var(--slate-line);
+    background: transparent;
+    color: var(--chalk);
+    cursor: pointer;
+  }
+  .queue-item:hover { background: var(--slate); }
+  .queue-item.active { background: var(--slate); box-shadow: inset 3px 0 0 var(--ember); }
+  .queue-item .qid {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ash);
+  }
+  .queue-item .qlabel {
+    margin-top: 3px;
+    font-size: 13px;
+  }
+  .queue-item .qbadges {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--slate-line);
+    color: var(--ash);
+  }
+  .badge.escalate { color: var(--ember); border-color: var(--ember-dim); }
+  .badge.bot_continue { color: var(--moss); border-color: var(--moss-dim); }
+  .badge.gated { color: var(--ember); border-color: var(--ember-dim); }
+  .badge.mismatch { color: var(--rust); border-color: var(--rust); }
+  .badge.challenging { color: var(--chalk); }
+
+  .detail { padding: 28px 32px; max-width: 720px; }
+  .detail .case-id {
+    font-family: var(--font-mono);
+    color: var(--ash);
+    font-size: 12px;
+  }
+  .detail h2 {
+    margin: 4px 0 4px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .detail .case-note {
+    color: var(--ash);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .transcript {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .turn {
+    max-width: 78%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13.5px;
+  }
+  .turn.customer {
+    align-self: flex-start;
+    background: var(--slate);
+    border: 1px solid var(--slate-line);
+  }
+  .turn.bot {
+    align-self: flex-end;
+    background: #22303A;
+    border: 1px solid #2E4653;
+  }
+  .turn .who {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ash);
+    margin-bottom: 3px;
+    text-transform: lowercase;
+  }
+
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 24px;
+    border: 1px solid var(--slate-line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .pstep {
+    flex: 1;
+    padding: 14px 16px;
+    border-right: 1px solid var(--slate-line);
+  }
+  .pstep:last-child { border-right: none; }
+  .pstep .ptitle {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ash);
+    margin-bottom: 8px;
+  }
+  .pstep .pbody { font-size: 12.5px; }
+  .pstep .pbody div { margin-bottom: 3px; }
+  .pstep.guard {
+    background: var(--slate);
+  }
+  .pstep.guard.pending {
+    background: var(--ember-dim);
+  }
+  .pstep.guard .gate-icon {
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .pstep .kv { color: var(--ash); }
+  .pstep .kv b { color: var(--chalk); font-weight: 500; }
+
+  .eval-row {
+    display: flex;
+    gap: 18px;
+    font-size: 12.5px;
+    color: var(--ash);
+    padding-top: 16px;
+    border-top: 1px solid var(--slate-line);
+  }
+  .eval-row b { color: var(--chalk); font-weight: 500; }
+
+  .empty {
+    padding: 60px 32px;
+    color: var(--ash);
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <h1>Support Triage Queue</h1>
+      <div class="subtitle">Escalation decisions made by the agent pipeline, gated for human approval before any consequential action.</div>
+    </div>
+    <div class="metrics-row" id="metrics"></div>
+  </div>
+  <div class="layout">
+    <div class="queue" id="queue"></div>
+    <div class="detail" id="detail"></div>
+  </div>
+
+  <script id="triage-data" type="application/json">{"baseline":{"runLabel":"baseline","timestamp":"2026-08-31T07:19:37.922Z","taskDescription":"Single direct-prompt escalation triage, no orchestration/guard","metrics":{"total":12,"correct":12,"accuracy":1,"precision":1,"recall":1,"f1":1,"challengingCases":3,"challengingCorrect":3},"sampleOutputs":[{"id":"c01","label":"faq_shipping_time","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"Hi, how long does delivery usually take to Kumasi?"},{"from":"bot","text":"Delivery to Kumasi typically takes 2-3 business days after your order ships."}],"expectedAction":"none","note":"Plain FAQ, no sentiment risk, no consequential action."},{"id":"c02","label":"angry_refund_demand","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"I ordered a blender 3 weeks ago and it STILL hasn't arrived. This is ridiculous."},{"from":"bot","text":"I'm sorry for the delay, let me check your order status."},{"from":"customer","text":"I don't want excuses. I want a full refund right now, this is theft at this point."}],"expectedAction":"refund","note":"High-severity language + explicit consequential action requested."},{"id":"c03","label":"mild_price_question","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"Do you have this in size L and how much is it?"},{"from":"bot","text":"Yes, size L is available for GHS 180."}],"expectedAction":"none","note":"Routine, low risk."},{"id":"c04","label":"cancellation_request_calm","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"Actually I'd like to cancel order #4471, I found it cheaper elsewhere."},{"from":"bot","text":"Understood, let me look into that for you."}],"expectedAction":"cancel","note":"Calm tone but still a consequential action — escalation is about the ACTION, not just sentiment. Good test of whether the agent over-indexes on tone alone."},{"id":"c05","label":"fraud_suspicion","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"Someone charged my card twice for the same order and I never even got a confirmation email. Is this a scam??"}],"expectedAction":"refund","note":"Trust/fraud language, high urgency, needs a human regardless of resolution."},{"id":"c06","label":"ambiguous_mixed_signal","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":true,"transcript":[{"from":"customer","text":"The product is fine I guess, but honestly the whole experience has been kind of annoying tbh"},{"from":"bot","text":"I'm sorry to hear that. Can you tell me more about what went wrong?"},{"from":"customer","text":"Nah it's whatever, don't worry about it"}],"expectedAction":"none","note":"CHALLENGING CASE: negative-leaning sentiment but customer explicitly waves it off and requests no action. Tests whether the agent over-escalates on sentiment alone vs. reading actual intent."},{"id":"c07","label":"positive_feedback","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"Just wanted to say the order arrived early and packaging was great, thank you!"}],"expectedAction":"none","note":"Clearly positive, no action needed."},{"id":"c08","label":"escalating_tone_across_turns","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":true,"transcript":[{"from":"customer","text":"Hi, my order says delivered but I never received it."},{"from":"bot","text":"Let me check the tracking details for you."},{"from":"customer","text":"It's been 2 days and no update from you."},{"from":"customer","text":"This is honestly unacceptable, I need this resolved today or I'm disputing the charge."}],"expectedAction":"refund","note":"CHALLENGING CASE: tone escalates gradually across turns, not obvious from the first message alone. Tests whether the agent tracks conversation trajectory or just scores the latest message."},{"id":"c09","label":"simple_thanks","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"ok thank you"}],"expectedAction":"none","note":"Trivial close-out."},{"id":"c10","label":"discount_request_minor","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"Any chance of a small discount if I buy 3?"},{"from":"bot","text":"Let me check what promotions are available."}],"expectedAction":"none","note":"Pricing question the bot can handle with published promo rules — not consequential enough to require human approval by itself."},{"id":"c11","label":"broken_product_very_negative","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":false,"transcript":[{"from":"customer","text":"The phone case arrived CRACKED. Completely useless. I want my money back immediately, don't send me another one."}],"expectedAction":"refund","note":"Clear-cut severe case, should be an easy catch — useful as a sanity check case."},{"id":"c12","label":"vague_complaint_no_action","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":true,"transcript":[{"from":"customer","text":"Not happy with my last order tbh"},{"from":"bot","text":"I'm sorry to hear that — what happened?"},{"from":"customer","text":"It's fine, just wanted you to know"}],"expectedAction":"none","note":"CHALLENGING CASE: negative sentiment word ('not happy') but no request for action and customer declines to elaborate. Similar trap to c06 from a different angle."}],"notes":"DRY RUN using offline heuristic stub — rerun with OPENAI_API_KEY set for real scoring."},"final":{"runLabel":"final","timestamp":"2026-08-31T07:19:37.922Z","taskDescription":"3-agent pipeline: classify -> decide escalation -> action guard","metrics":{"total":12,"correct":12,"accuracy":1,"precision":1,"recall":1,"f1":1,"challengingCases":3,"challengingCorrect":3},"sampleOutputs":[{"id":"c01","label":"faq_shipping_time","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"classification":{"sentiment":"neutral","urgency":"low","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=neutral, urgency=low","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"Hi, how long does delivery usually take to Kumasi?"},{"from":"bot","text":"Delivery to Kumasi typically takes 2-3 business days after your order ships."}],"expectedAction":"none","note":"Plain FAQ, no sentiment risk, no consequential action."},{"id":"c02","label":"angry_refund_demand","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":false,"classification":{"sentiment":"very_negative","urgency":"high","proposedAction":"refund","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=refund, sentiment=very_negative, urgency=high","guardStatus":"pending_human_approval","guardNote":"Action \"refund\" queued for human approval. Not executed automatically.","transcript":[{"from":"customer","text":"I ordered a blender 3 weeks ago and it STILL hasn't arrived. This is ridiculous."},{"from":"bot","text":"I'm sorry for the delay, let me check your order status."},{"from":"customer","text":"I don't want excuses. I want a full refund right now, this is theft at this point."}],"expectedAction":"refund","note":"High-severity language + explicit consequential action requested."},{"id":"c03","label":"mild_price_question","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"classification":{"sentiment":"neutral","urgency":"low","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=neutral, urgency=low","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"Do you have this in size L and how much is it?"},{"from":"bot","text":"Yes, size L is available for GHS 180."}],"expectedAction":"none","note":"Routine, low risk."},{"id":"c04","label":"cancellation_request_calm","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":false,"classification":{"sentiment":"neutral","urgency":"medium","proposedAction":"cancel","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=cancel, sentiment=neutral, urgency=medium","guardStatus":"pending_human_approval","guardNote":"Action \"cancel\" queued for human approval. Not executed automatically.","transcript":[{"from":"customer","text":"Actually I'd like to cancel order #4471, I found it cheaper elsewhere."},{"from":"bot","text":"Understood, let me look into that for you."}],"expectedAction":"cancel","note":"Calm tone but still a consequential action — escalation is about the ACTION, not just sentiment. Good test of whether the agent over-indexes on tone alone."},{"id":"c05","label":"fraud_suspicion","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":false,"classification":{"sentiment":"very_negative","urgency":"high","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=very_negative, urgency=high","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"Someone charged my card twice for the same order and I never even got a confirmation email. Is this a scam??"}],"expectedAction":"refund","note":"Trust/fraud language, high urgency, needs a human regardless of resolution."},{"id":"c06","label":"ambiguous_mixed_signal","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":true,"classification":{"sentiment":"neutral","urgency":"low","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=neutral, urgency=low","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"The product is fine I guess, but honestly the whole experience has been kind of annoying tbh"},{"from":"bot","text":"I'm sorry to hear that. Can you tell me more about what went wrong?"},{"from":"customer","text":"Nah it's whatever, don't worry about it"}],"expectedAction":"none","note":"CHALLENGING CASE: negative-leaning sentiment but customer explicitly waves it off and requests no action. Tests whether the agent over-escalates on sentiment alone vs. reading actual intent."},{"id":"c07","label":"positive_feedback","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"classification":{"sentiment":"positive","urgency":"low","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=positive, urgency=low","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"Just wanted to say the order arrived early and packaging was great, thank you!"}],"expectedAction":"none","note":"Clearly positive, no action needed."},{"id":"c08","label":"escalating_tone_across_turns","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":true,"classification":{"sentiment":"very_negative","urgency":"high","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=very_negative, urgency=high","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"Hi, my order says delivered but I never received it."},{"from":"bot","text":"Let me check the tracking details for you."},{"from":"customer","text":"It's been 2 days and no update from you."},{"from":"customer","text":"This is honestly unacceptable, I need this resolved today or I'm disputing the charge."}],"expectedAction":"refund","note":"CHALLENGING CASE: tone escalates gradually across turns, not obvious from the first message alone. Tests whether the agent tracks conversation trajectory or just scores the latest message."},{"id":"c09","label":"simple_thanks","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"classification":{"sentiment":"positive","urgency":"low","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=positive, urgency=low","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"ok thank you"}],"expectedAction":"none","note":"Trivial close-out."},{"id":"c10","label":"discount_request_minor","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":false,"classification":{"sentiment":"neutral","urgency":"low","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=neutral, urgency=low","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"Any chance of a small discount if I buy 3?"},{"from":"bot","text":"Let me check what promotions are available."}],"expectedAction":"none","note":"Pricing question the bot can handle with published promo rules — not consequential enough to require human approval by itself."},{"id":"c11","label":"broken_product_very_negative","expectedDecision":"escalate","predictedDecision":"escalate","correct":true,"isChallengingCase":false,"classification":{"sentiment":"very_negative","urgency":"high","proposedAction":"refund","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=refund, sentiment=very_negative, urgency=high","guardStatus":"pending_human_approval","guardNote":"Action \"refund\" queued for human approval. Not executed automatically.","transcript":[{"from":"customer","text":"The phone case arrived CRACKED. Completely useless. I want my money back immediately, don't send me another one."}],"expectedAction":"refund","note":"Clear-cut severe case, should be an easy catch — useful as a sanity check case."},{"id":"c12","label":"vague_complaint_no_action","expectedDecision":"bot_continue","predictedDecision":"bot_continue","correct":true,"isChallengingCase":true,"classification":{"sentiment":"neutral","urgency":"low","proposedAction":"none","reasoning":"[dry-run heuristic, policy-aware v2] keyword + trajectory + policy-context based classification"},"escalationReasoning":"[dry-run heuristic] action=none, sentiment=neutral, urgency=low","guardStatus":"not_required","guardNote":"No consequential action proposed.","transcript":[{"from":"customer","text":"Not happy with my last order tbh"},{"from":"bot","text":"I'm sorry to hear that — what happened?"},{"from":"customer","text":"It's fine, just wanted you to know"}],"expectedAction":"none","note":"CHALLENGING CASE: negative sentiment word ('not happy') but no request for action and customer declines to elaborate. Similar trap to c06 from a different angle."}],"notes":"DRY RUN using offline heuristic stub — rerun with OPENAI_API_KEY set for real scoring."}}</script>
+  <script>
+    const data = JSON.parse(document.getElementById('triage-data').textContent);
+    const cases = data.final.sampleOutputs;
+    const baselineById = Object.fromEntries(data.baseline.sampleOutputs.map(c => [c.id, c]));
+    const isLive = !(data.final.notes || '').includes('DRY RUN');
+
+    function renderMetrics() {
+      const m = data.final.metrics;
+      const bm = data.baseline.metrics;
+      const el = document.getElementById('metrics');
+      const modePill = '<span class="mode-pill">' + (isLive ? 'LIVE' : 'DRY RUN — heuristic stub') + '</span>';
+      function metric(label, val, base) {
+        const cls = val > base ? 'better' : (val < base ? 'worse' : '');
+        return '<div class="metric"><div class="label">' + label + '</div><div class="value ' + cls + '">' + val.toFixed(2) + '</div></div>';
+      }
+      el.innerHTML = modePill
+        + metric('accuracy', m.accuracy, bm.accuracy)
+        + metric('recall', m.recall, bm.recall)
+        + metric('f1', m.f1, bm.f1);
+    }
+
+    function decisionBadge(decision) {
+      return '<span class="badge ' + decision + '">' + decision.replace('_', ' ') + '</span>';
+    }
+
+    function renderQueue(selectedId) {
+      const el = document.getElementById('queue');
+      el.innerHTML = cases.map(c => {
+        const gated = c.guardStatus === 'pending_human_approval';
+        const mismatch = !c.correct;
+        const badges = [
+          decisionBadge(c.predictedDecision),
+          gated ? '<span class="badge gated">pending approval</span>' : '',
+          mismatch ? '<span class="badge mismatch">vs. baseline: ' + (baselineById[c.id] ? baselineById[c.id].predictedDecision : '?') + '</span>' : '',
+          c.isChallengingCase ? '<span class="badge challenging">challenging case</span>' : '',
+        ].filter(Boolean).join('');
+        return '<button class="queue-item ' + (c.id === selectedId ? 'active' : '') + '" data-id="' + c.id + '">'
+          + '<div class="qid">' + c.id + '</div>'
+          + '<div class="qlabel">' + c.label.replace(/_/g, ' ') + '</div>'
+          + '<div class="qbadges">' + badges + '</div>'
+          + '</button>';
+      }).join('');
+      el.querySelectorAll('.queue-item').forEach(btn => {
+        btn.addEventListener('click', () => selectCase(btn.dataset.id));
+      });
+    }
+
+    function renderDetail(c) {
+      const el = document.getElementById('detail');
+      if (!c) { el.innerHTML = '<div class="empty">Select a conversation from the queue.</div>'; return; }
+
+      const transcriptHtml = c.transcript.map(t =>
+        '<div class="turn ' + t.from + '"><div class="who">' + t.from + '</div>' + escapeHtml(t.text) + '</div>'
+      ).join('');
+
+      const gated = c.guardStatus === 'pending_human_approval';
+      const cls = c.classification || {};
+
+      const pipelineHtml = '<div class="pipeline">'
+        + '<div class="pstep">'
+          + '<div class="ptitle">classify</div>'
+          + '<div class="pbody">'
+            + '<div class="kv">sentiment <b>' + (cls.sentiment || '—') + '</b></div>'
+            + '<div class="kv">urgency <b>' + (cls.urgency || '—') + '</b></div>'
+            + '<div class="kv">proposed action <b>' + (cls.proposedAction || 'none') + '</b></div>'
+          + '</div>'
+        + '</div>'
+        + '<div class="pstep">'
+          + '<div class="ptitle">decide</div>'
+          + '<div class="pbody">'
+            + '<div class="kv">decision <b>' + c.predictedDecision.replace('_', ' ') + '</b></div>'
+            + '<div class="kv" style="margin-top:6px;">' + escapeHtml(c.escalationReasoning || '') + '</div>'
+          + '</div>'
+        + '</div>'
+        + '<div class="pstep guard ' + (gated ? 'pending' : '') + '">'
+          + '<div class="ptitle"><span class="gate-icon">' + (gated ? '&#128274;' : '&#9679;') + '</span>guard</div>'
+          + '<div class="pbody">'
+            + '<div class="kv"><b>' + (c.guardStatus || 'not_required').replace(/_/g, ' ') + '</b></div>'
+            + '<div class="kv" style="margin-top:6px;">' + escapeHtml(c.guardNote || 'No consequential action proposed.') + '</div>'
+          + '</div>'
+        + '</div>'
+      + '</div>';
+
+      const bl = baselineById[c.id];
+      const evalHtml = '<div class="eval-row">'
+        + '<div>expected: <b>' + c.expectedDecision.replace('_', ' ') + '</b></div>'
+        + '<div>agent: <b>' + c.predictedDecision.replace('_', ' ') + '</b> ' + (c.correct ? '(correct)' : '(incorrect)') + '</div>'
+        + (bl ? '<div>baseline: <b>' + bl.predictedDecision.replace('_', ' ') + '</b> ' + (bl.correct ? '(correct)' : '(incorrect)') + '</div>' : '')
+      + '</div>';
+
+      el.innerHTML = '<div class="case-id">' + c.id + '</div>'
+        + '<h2>' + c.label.replace(/_/g, ' ') + '</h2>'
+        + (c.note ? '<div class="case-note">' + escapeHtml(c.note) + '</div>' : '')
+        + '<div class="transcript">' + transcriptHtml + '</div>'
+        + pipelineHtml
+        + evalHtml;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    let selected = cases[0] ? cases[0].id : null;
+    function selectCase(id) {
+      selected = id;
+      renderQueue(selected);
+      renderDetail(cases.find(c => c.id === id));
+    }
+
+    renderMetrics();
+    selectCase(selected);
+  </script>
+</body>
+</html>
