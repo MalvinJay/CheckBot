@@ -1,6 +1,6 @@
 import { assertConfig } from "./config.js";
 import { runSupportTriage } from "./agents/supervisor.js";
-import { isLiveMode } from "./llm/client.js";
+import { isLiveMode, provider } from "./llm/client.js";
 
 /**
  * CLI entry point — runs a single conversation through the triage
@@ -15,7 +15,7 @@ async function main() {
     ? args.join(" ")
     : "I want a refund right now, this is ridiculous.";
 
-  console.log(`[checkbot] mode: ${isLiveMode ? "LIVE" : "DRY RUN"}`);
+  console.log(`[checkbot] mode: ${isLiveMode ? `LIVE (${provider})` : "DRY RUN"}`);
   console.log(`[checkbot] input: "${customerText}"\n`);
 
   const result = await runSupportTriage("cli-run", [

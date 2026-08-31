@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { runSupportTriage } from "../agents/supervisor.js";
 import { runBaselineTriage } from "../baseline.js";
 import { Turn, Decision } from "../types.js";
-import { isLiveMode } from "../llm/client.js";
+import { isLiveMode, provider } from "../llm/client.js";
 
 interface EvalCase {
   id: string;
@@ -105,7 +105,7 @@ function mergeWithCaseContext(results: CaseResult[], cases: EvalCase[]) {
 
 async function main() {
   const cases = loadCases();
-  console.log(`[eval] mode: ${isLiveMode ? "LIVE (OpenAI)" : "DRY RUN (heuristic stub)"}`);
+  console.log(`[eval] mode: ${isLiveMode ? `LIVE (${provider})` : "DRY RUN (heuristic stub)"}`);
   console.log(`[eval] ${cases.length} cases loaded\n`);
 
   const baselineResults = await runMode("baseline", cases);
@@ -135,7 +135,7 @@ async function main() {
         taskDescription: "Single direct-prompt escalation triage, no orchestration/guard",
         metrics: baselineScore,
         sampleOutputs: mergeWithCaseContext(baselineResults, cases),
-        notes: isLiveMode ? "" : "DRY RUN using offline heuristic stub — rerun with OPENAI_API_KEY set for real scoring.",
+        notes: isLiveMode ? "" : "DRY RUN using offline heuristic stub — rerun with GEMINI_API_KEY or OPENAI_API_KEY set for real scoring.",
       },
       null,
       2
@@ -151,7 +151,7 @@ async function main() {
         taskDescription: "3-agent pipeline: classify -> decide escalation -> action guard",
         metrics: agentScore,
         sampleOutputs: mergeWithCaseContext(agentResults, cases),
-        notes: isLiveMode ? "" : "DRY RUN using offline heuristic stub — rerun with OPENAI_API_KEY set for real scoring.",
+        notes: isLiveMode ? "" : "DRY RUN using offline heuristic stub — rerun with GEMINI_API_KEY or OPENAI_API_KEY set for real scoring.",
       },
       null,
       2
