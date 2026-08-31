@@ -1,6 +1,6 @@
-# WhatsApp Support Escalation Triage
+# CheckBot
 
-One-line pitch: *An SME support team running a WhatsApp bot needs to know, per conversation, whether the bot can keep handling it or a human needs to step in — and the system should never let the bot auto-execute a refund/cancellation/discount.*
+One-line pitch: *An SME support team running a WhatsApp bot needs to know, per conversation, whether the bot can keep handling it or a human needs to step in — and CheckBot never lets the bot auto-execute a refund/cancellation/discount.*
 
 ## Status
 Core pipeline built and verified end-to-end in dry-run mode (deterministic
@@ -11,7 +11,7 @@ confirmed. `npm run eval` reproduces everything below.
 ## Quickstart (reproducibility)
 ```bash
 git clone <repo-url>
-cd frontier-scaffold
+cd checkbot
 ./scripts/setup.sh   # installs deps, creates .env
 npm run eval          # runs baseline + agent pipeline, writes results/*.json
 npm run dashboard     # generates dashboard/index.html from results/*.json

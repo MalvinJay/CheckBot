@@ -14,7 +14,7 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Support Triage Queue</title>
+<title>CheckBot — Support Triage Queue</title>
 <style>
   :root {
     --basalt: #15181C;
@@ -248,7 +248,7 @@ const html = `<!DOCTYPE html>
 <body>
   <div class="topbar">
     <div>
-      <h1>Support Triage Queue</h1>
+      <h1>CheckBot</h1>
       <div class="subtitle">Escalation decisions made by the agent pipeline, gated for human approval before any consequential action.</div>
     </div>
     <div class="metrics-row" id="metrics"></div>

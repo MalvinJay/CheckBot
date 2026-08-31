@@ -1,6 +1,6 @@
 {
   "runLabel": "baseline",
-  "timestamp": "2026-08-31T07:19:37.922Z",
+  "timestamp": "2026-08-31T15:13:29.150Z",
   "taskDescription": "Single direct-prompt escalation triage, no orchestration/guard",
   "metrics": {
     "total": 12,

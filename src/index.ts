@@ -15,8 +15,8 @@ async function main() {
     ? args.join(" ")
     : "I want a refund right now, this is ridiculous.";
 
-  console.log(`[whatsapp-support-triage] mode: ${isLiveMode ? "LIVE" : "DRY RUN"}`);
-  console.log(`[whatsapp-support-triage] input: "${customerText}"\n`);
+  console.log(`[checkbot] mode: ${isLiveMode ? "LIVE" : "DRY RUN"}`);
+  console.log(`[checkbot] input: "${customerText}"\n`);
 
   const result = await runSupportTriage("cli-run", [
     { from: "customer", text: customerText },
@@ -28,6 +28,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("[whatsapp-support-triage] fatal error:", err);
+  console.error("[checkbot] fatal error:", err);
   process.exit(1);
 });

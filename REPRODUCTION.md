@@ -12,7 +12,7 @@ expected output, versions, and approximate runtime/cost.
 ## Setup
 ```bash
 git clone <repo-url>
-cd frontier-scaffold
+cd checkbot
 ./scripts/setup.sh
 # fill in .env — see .env.example for required keys
 ```

@@ -1,6 +1,6 @@
 {
   "runLabel": "final",
-  "timestamp": "2026-08-31T07:19:37.922Z",
+  "timestamp": "2026-08-31T15:13:29.150Z",
   "taskDescription": "3-agent pipeline: classify -> decide escalation -> action guard",
   "metrics": {
     "total": 12,

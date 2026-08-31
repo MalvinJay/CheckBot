@@ -1,7 +1,7 @@
 {
-  "name": "whatsapp-support-triage",
+  "name": "checkbot",
   "version": "0.1.0",
-  "description": "Agentic WhatsApp support escalation triage — micro1 Agentic Workflows Hackathon",
+  "description": "CheckBot — agentic WhatsApp support escalation triage with a human-approval gate. micro1 Agentic Workflows Hackathon.",
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",
